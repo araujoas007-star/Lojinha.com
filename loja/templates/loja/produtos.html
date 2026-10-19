@@ -1,0 +1,14 @@
+{% extends "loja/base.html" %}
+{% block title %}Produtos | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">CATÁLOGO DA LOJA</div><h1>Produtos</h1><p>Cadastre e gerencie os itens da sua conveniência.</p></div><a class="button button-primary" href="{% url 'loja:produto_criar' %}"><span>＋</span> Novo produto</a></div>
+<section class="panel">
+    <div class="panel-heading"><div><h2>Todos os produtos</h2><p>{{ produtos|length }} registro(s) encontrado(s)</p></div>
+    <form class="search-form" method="get"><input type="search" name="q" value="{{ termo }}" placeholder="Buscar produto..." aria-label="Buscar produto"><button class="button button-light" type="submit">Buscar</button>{% if termo %}<a class="text-link" href="{% url 'loja:produtos' %}">Limpar</a>{% endif %}</form></div>
+    {% if produtos %}
+    <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Quantidade</th><th>Valor em estoque</th><th>Ações</th></tr></thead><tbody>
+    {% for produto in produtos %}<tr><td><div class="product-cell"><span class="product-thumb">{{ produto.nome|slice:":1"|upper }}</span><div><strong>{{ produto.nome }}</strong>{% if produto.descricao %}<small>{{ produto.descricao|truncatechars:48 }}</small>{% endif %}</div></div></td><td><span class="category-chip">{{ produto.categoria.nome }}</span></td><td>R$ {{ produto.preco|floatformat:2 }}</td><td>{% if produto.estoque_baixo %}<span class="stock low">{{ produto.quantidade }} un.</span>{% else %}<span class="stock ok">{{ produto.quantidade }} un.</span>{% endif %}</td><td>R$ {{ produto.valor_em_estoque|floatformat:2 }}</td><td><div class="actions"><a class="action-edit" href="{% url 'loja:produto_editar' produto.pk %}">Editar</a><a class="action-delete" href="{% url 'loja:produto_excluir' produto.pk %}">Excluir</a></div></td></tr>{% endfor %}
+    </tbody></table></div>
+    {% else %}<div class="empty-state"><span class="empty-icon">▤</span><h3>{% if termo %}Nenhum resultado encontrado{% else %}Nenhum produto cadastrado{% endif %}</h3><p>{% if termo %}Tente pesquisar com outro nome.{% else %}Adicione produtos para organizar seu estoque.{% endif %}</p>{% if not termo %}<a class="button button-primary" href="{% url 'loja:produto_criar' %}">Cadastrar primeiro produto</a>{% endif %}</div>{% endif %}
+</section>
+{% endblock %}

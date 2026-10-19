@@ -1,0 +1,10 @@
+{% extends "loja/base.html" %}
+{% block title %}{{ titulo }} | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">CADASTRO E GERENCIAMENTO</div><h1>{{ titulo }}</h1><p>Preencha os campos abaixo e salve as informações.</p></div></div>
+<div class="form-layout"><section class="panel form-panel"><form method="post" novalidate>{% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}<div class="form-field"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required">*</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="field-error">{{ field.errors }}</div>{% endif %}</div>{% endfor %}
+    <div class="form-actions"><a class="button button-light" href="{% url voltar_url %}">Cancelar</a><button class="button button-primary" type="submit">Salvar informações</button></div>
+</form></section><aside class="form-tip"><span class="tip-icon">i</span><h3>Dica</h3><p>Confira as informações antes de salvar. Os campos marcados com <span class="required">*</span> são obrigatórios.</p>{% if "produto" in titulo|lower %}<p>Para cadastrar um produto, é necessário ter ao menos uma categoria criada.</p>{% endif %}</aside></div>
+{% endblock %}

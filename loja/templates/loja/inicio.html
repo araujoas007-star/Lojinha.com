@@ -1,0 +1,33 @@
+{% extends "loja/base.html" %}
+{% block title %}Visão geral | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div><div class="eyebrow">PAINEL DE CONTROLE</div><h1>Visão geral</h1><p>Bem-vindo ao painel da sua loja de conveniência.</p></div>
+    <a class="button button-primary" href="{% url 'loja:produto_criar' %}"><span>＋</span> Novo produto</a>
+</div>
+<div class="stats-grid">
+    <article class="stat-card"><div class="stat-top"><span class="stat-label">Produtos cadastrados</span><span class="stat-icon purple">▤</span></div><div class="stat-value">{{ total_produtos }}</div><div class="stat-foot">Itens no catálogo</div></article>
+    <article class="stat-card"><div class="stat-top"><span class="stat-label">Categorias</span><span class="stat-icon blue">▧</span></div><div class="stat-value">{{ total_categorias }}</div><div class="stat-foot">Tipos de produtos</div></article>
+    <article class="stat-card"><div class="stat-top"><span class="stat-label">Valor em estoque</span><span class="stat-icon green">R$</span></div><div class="stat-value money">R$ {{ valor_total|floatformat:2 }}</div><div class="stat-foot">Preço × quantidade</div></article>
+    <article class="stat-card"><div class="stat-top"><span class="stat-label">Estoque baixo</span><span class="stat-icon orange">!</span></div><div class="stat-value">{{ itens_baixo_estoque|length }}</div><div class="stat-foot">Até 5 unidades nos itens exibidos</div></article>
+</div>
+<div class="content-grid">
+    <section class="panel">
+        <div class="panel-heading"><div><h2>Produtos recentes</h2><p>Últimos itens cadastrados</p></div><a class="text-link" href="{% url 'loja:produtos' %}">Ver todos →</a></div>
+        {% if ultimos_produtos %}
+        <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Estoque</th></tr></thead><tbody>
+        {% for produto in ultimos_produtos %}
+        <tr><td><strong>{{ produto.nome }}</strong></td><td><span class="category-chip">{{ produto.categoria.nome }}</span></td><td>R$ {{ produto.preco|floatformat:2 }}</td><td>{% if produto.estoque_baixo %}<span class="stock low">{{ produto.quantidade }} un.</span>{% else %}<span class="stock ok">{{ produto.quantidade }} un.</span>{% endif %}</td></tr>
+        {% endfor %}
+        </tbody></table></div>
+        {% else %}<div class="empty-state"><span class="empty-icon">▤</span><h3>Nenhum produto por aqui</h3><p>Cadastre seu primeiro produto para começar.</p><a class="button button-primary" href="{% url 'loja:produto_criar' %}">Cadastrar produto</a></div>{% endif %}
+    </section>
+    <section class="panel">
+        <div class="panel-heading"><div><h2>Atenção ao estoque</h2><p>Produtos com 5 unidades ou menos</p></div><span class="stat-icon orange">!</span></div>
+        {% if itens_baixo_estoque %}
+        <div class="low-stock-list">{% for produto in itens_baixo_estoque %}<div class="low-stock-item"><span class="product-dot">•</span><div class="low-stock-info"><strong>{{ produto.nome }}</strong><small>{{ produto.categoria.nome }}</small></div><span class="stock low">{{ produto.quantidade }} un.</span><a class="icon-link" href="{% url 'loja:produto_editar' produto.pk %}" title="Editar produto">↗</a></div>{% endfor %}</div>
+        {% else %}<div class="empty-small"><span>✓</span><p>Nenhum produto com estoque baixo.</p></div>{% endif %}
+        <a class="panel-bottom-link" href="{% url 'loja:produtos' %}">Gerenciar estoque →</a>
+    </section>
+</div>
+{% endblock %}

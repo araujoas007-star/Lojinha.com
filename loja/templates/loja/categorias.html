@@ -1,0 +1,9 @@
+{% extends "loja/base.html" %}
+{% block title %}Categorias | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">ORGANIZAÇÃO DO CATÁLOGO</div><h1>Categorias</h1><p>Organize os produtos por tipo e facilite a consulta.</p></div><a class="button button-primary" href="{% url 'loja:categoria_criar' %}"><span>＋</span> Nova categoria</a></div>
+<section class="panel"><div class="panel-heading"><div><h2>Categorias cadastradas</h2><p>{{ categorias|length }} registro(s)</p></div></div>
+{% if categorias %}<div class="category-grid">{% for categoria in categorias %}<article class="category-card"><div class="category-card-top"><span class="category-symbol">▧</span><span class="category-count">{{ categoria.produtos.count }} produto(s)</span></div><h3>{{ categoria.nome }}</h3><p>{% if categoria.descricao %}{{ categoria.descricao }}{% else %}Sem descrição informada.{% endif %}</p><div class="category-actions"><a class="action-edit" href="{% url 'loja:categoria_editar' categoria.pk %}">Editar</a><a class="action-delete" href="{% url 'loja:categoria_excluir' categoria.pk %}">Excluir</a></div></article>{% endfor %}</div>
+{% else %}<div class="empty-state"><span class="empty-icon">▧</span><h3>Nenhuma categoria cadastrada</h3><p>Crie uma categoria antes de cadastrar os produtos.</p><a class="button button-primary" href="{% url 'loja:categoria_criar' %}">Cadastrar categoria</a></div>{% endif %}
+</section>
+{% endblock %}

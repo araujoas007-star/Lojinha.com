@@ -1,0 +1,6 @@
+{% extends "loja/base.html" %}
+{% block title %}Excluir {{ tipo }} | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">CONFIRMAÇÃO</div><h1>Excluir {{ tipo }}</h1><p>Confira o registro antes de confirmar a exclusão.</p></div></div>
+<section class="panel confirm-panel"><div class="confirm-icon">!</div><h2>Tem certeza que deseja excluir?</h2><p>Você está prestes a excluir <strong>{{ objeto }}</strong>. Essa ação não poderá ser desfeita.</p><form method="post">{% csrf_token %}<div class="form-actions center"><a class="button button-light" href="{% url voltar_url %}">Cancelar</a><button class="button button-danger" type="submit">Sim, excluir</button></div></form></section>
+{% endblock %}
