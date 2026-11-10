@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar | Lojinha.com</title>
+    <link rel="stylesheet" href="{% static 'loja/css/style.css' %}">
+</head>
+<body class="login-page">
+    <main class="login-card">
+        <a class="brand login-brand" href="{% url 'login' %}">
+            <span class="brand-icon">L</span>
+            <span><strong>Lojinha<span class="brand-dot">.com</span></strong><small>LOJA DE CONVENIÊNCIA</small></span>
+        </a>
+        <div class="eyebrow">ACESSO RESTRITO</div>
+        <h1>Bem-vindo de volta</h1>
+        <p class="login-intro">Entre com sua conta autorizada para acessar o painel.</p>
+        <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="login-error">{{ form.non_field_errors }}</div>{% endif %}
+            {% for field in form %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<div class="field-error">{{ field.errors }}</div>{% endif %}
+                </div>
+            {% endfor %}
+            <input type="hidden" name="next" value="{{ next }}">
+            <button class="button button-primary login-submit" type="submit">Entrar no painel</button>
+        </form>
+    </main>
+</body>
+</html>

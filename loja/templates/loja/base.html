@@ -30,7 +30,7 @@
             <header class="topbar">
                 <div class="mobile-brand"><span class="brand-icon">L</span><strong>Lojinha<span class="brand-dot">.com</span></strong></div>
                 <div class="topbar-note">Sistema de gerenciamento</div>
-                <div class="user-pill"><span class="user-avatar">A</span><span><strong>Administrador</strong><small>Área de gestão</small></span></div>
+                <div class="user-pill"><span class="user-avatar">{{ request.user.get_username|slice:":1"|upper }}</span><span><strong>{{ request.user.get_username }}</strong><small>Área de gestão</small></span><form class="logout-form" method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Sair</button></form></div>
             </header>
             <section class="page-content">
                 {% if messages %}

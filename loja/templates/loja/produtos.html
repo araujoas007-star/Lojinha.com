@@ -3,12 +3,24 @@
 {% block content %}
 <div class="page-heading"><div><div class="eyebrow">CATÁLOGO DA LOJA</div><h1>Produtos</h1><p>Cadastre e gerencie os itens da sua conveniência.</p></div><a class="button button-primary" href="{% url 'loja:produto_criar' %}"><span>＋</span> Novo produto</a></div>
 <section class="panel">
-    <div class="panel-heading"><div><h2>Todos os produtos</h2><p>{{ produtos|length }} registro(s) encontrado(s)</p></div>
-    <form class="search-form" method="get"><input type="search" name="q" value="{{ termo }}" placeholder="Buscar produto..." aria-label="Buscar produto"><button class="button button-light" type="submit">Buscar</button>{% if termo %}<a class="text-link" href="{% url 'loja:produtos' %}">Limpar</a>{% endif %}</form></div>
+    <div class="panel-heading"><div><h2>Todos os produtos</h2><p>{{ page_obj.paginator.count }} registro(s) encontrado(s)</p></div>
+    <form class="search-form filters-form" method="get">
+        <div class="filter-field"><label for="{{ filtro_form.q.id_for_label }}">Produto</label>{{ filtro_form.q }}</div>
+        <div class="filter-field"><label for="{{ filtro_form.categoria.id_for_label }}">Categoria</label>{{ filtro_form.categoria }}</div>
+        <div class="filter-field"><label for="{{ filtro_form.ordenar.id_for_label }}">Ordenação</label>{{ filtro_form.ordenar }}</div>
+        <button class="button button-light" type="submit">Filtrar</button>
+        {% if termo or categoria_selecionada or ordenacao or filtro_form.errors %}<a class="text-link" href="{% url 'loja:produtos' %}">Limpar</a>{% endif %}
+        {% if filtro_form.errors %}<div class="filter-errors">{{ filtro_form.errors }}</div>{% endif %}
+    </form></div>
     {% if produtos %}
     <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Quantidade</th><th>Valor em estoque</th><th>Ações</th></tr></thead><tbody>
     {% for produto in produtos %}<tr><td><div class="product-cell"><span class="product-thumb">{{ produto.nome|slice:":1"|upper }}</span><div><strong>{{ produto.nome }}</strong>{% if produto.descricao %}<small>{{ produto.descricao|truncatechars:48 }}</small>{% endif %}</div></div></td><td><span class="category-chip">{{ produto.categoria.nome }}</span></td><td>R$ {{ produto.preco|floatformat:2 }}</td><td>{% if produto.estoque_baixo %}<span class="stock low">{{ produto.quantidade }} un.</span>{% else %}<span class="stock ok">{{ produto.quantidade }} un.</span>{% endif %}</td><td>R$ {{ produto.valor_em_estoque|floatformat:2 }}</td><td><div class="actions"><a class="action-edit" href="{% url 'loja:produto_editar' produto.pk %}">Editar</a><a class="action-delete" href="{% url 'loja:produto_excluir' produto.pk %}">Excluir</a></div></td></tr>{% endfor %}
     </tbody></table></div>
-    {% else %}<div class="empty-state"><span class="empty-icon">▤</span><h3>{% if termo %}Nenhum resultado encontrado{% else %}Nenhum produto cadastrado{% endif %}</h3><p>{% if termo %}Tente pesquisar com outro nome.{% else %}Adicione produtos para organizar seu estoque.{% endif %}</p>{% if not termo %}<a class="button button-primary" href="{% url 'loja:produto_criar' %}">Cadastrar primeiro produto</a>{% endif %}</div>{% endif %}
+    {% if page_obj.has_other_pages %}<nav class="pagination" aria-label="Paginação de produtos">
+        {% if page_obj.has_previous %}<a href="?{% if termo %}q={{ termo|urlencode }}&amp;{% endif %}{% if categoria_selecionada %}categoria={{ categoria_selecionada }}&amp;{% endif %}{% if ordenacao %}ordenar={{ ordenacao|urlencode }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Página anterior">‹ Anterior</a>{% else %}<span class="disabled">‹ Anterior</span>{% endif %}
+        <span class="pagination-status">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a href="?{% if termo %}q={{ termo|urlencode }}&amp;{% endif %}{% if categoria_selecionada %}categoria={{ categoria_selecionada }}&amp;{% endif %}{% if ordenacao %}ordenar={{ ordenacao|urlencode }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="Próxima página">Próxima ›</a>{% else %}<span class="disabled">Próxima ›</span>{% endif %}
+    </nav>{% endif %}
+    {% else %}<div class="empty-state"><span class="empty-icon">▤</span><h3>{% if filtro_form.errors %}Revise os filtros{% elif termo or categoria_selecionada or ordenacao %}Nenhum resultado encontrado{% else %}Nenhum produto cadastrado{% endif %}</h3><p>{% if filtro_form.errors %}Corrija os campos destacados e tente novamente.{% elif termo or categoria_selecionada or ordenacao %}Altere os filtros para encontrar produtos.{% else %}Adicione produtos para organizar seu estoque.{% endif %}</p>{% if not termo and not categoria_selecionada and not ordenacao and not filtro_form.errors %}<a class="button button-primary" href="{% url 'loja:produto_criar' %}">Cadastrar primeiro produto</a>{% endif %}</div>{% endif %}
 </section>
 {% endblock %}

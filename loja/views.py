@@ -1,14 +1,33 @@
+from functools import wraps
+
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Sum, F, DecimalField, ExpressionWrapper
+from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
+from django.db.models import Count, Sum, F, DecimalField, ExpressionWrapper
 from django.shortcuts import get_object_or_404, redirect, render
 
+from .filters import ProdutoFiltroForm
 from .forms import CategoriaForm, ProdutoForm
 from .models import Categoria, Produto
 
 
+def staff_required(view_func):
+    @login_required
+    @wraps(view_func)
+    def wrapped_view(request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied
+        return view_func(request, *args, **kwargs)
+
+    return wrapped_view
+
+
+@staff_required
 def inicio(request):
     total_produtos = Produto.objects.count()
     total_categorias = Categoria.objects.count()
+    total_estoque_baixo = Produto.objects.filter(quantidade__lte=5).count()
     itens_baixo_estoque = Produto.objects.filter(quantidade__lte=5).order_by("quantidade", "nome")[:5]
     valor_total = Produto.objects.aggregate(
         total=Sum(
@@ -22,20 +41,45 @@ def inicio(request):
     return render(request, "loja/inicio.html", {
         "total_produtos": total_produtos,
         "total_categorias": total_categorias,
+        "total_estoque_baixo": total_estoque_baixo,
         "itens_baixo_estoque": itens_baixo_estoque,
         "valor_total": valor_total,
         "ultimos_produtos": ultimos_produtos,
     })
 
 
+@staff_required
 def produtos(request):
-    termo = request.GET.get("q", "").strip()
+    filtro_form = ProdutoFiltroForm(request.GET or None)
     lista = Produto.objects.select_related("categoria")
-    if termo:
-        lista = lista.filter(nome__icontains=termo)
-    return render(request, "loja/produtos.html", {"produtos": lista, "termo": termo})
+    termo = ""
+    categoria_selecionada = ""
+    ordenacao = ""
+    if filtro_form.is_valid():
+        termo = filtro_form.cleaned_data["q"].strip()
+        categoria = filtro_form.cleaned_data["categoria"]
+        ordenacao = filtro_form.cleaned_data["ordenar"]
+        if termo:
+            lista = lista.filter(nome__icontains=termo)
+        if categoria:
+            categoria_selecionada = categoria.pk
+            lista = lista.filter(categoria=categoria)
+        if ordenacao:
+            lista = lista.order_by(ordenacao, "pk")
+    else:
+        lista = lista.none()
+    page_obj = Paginator(lista, 20).get_page(request.GET.get("page"))
+    return render(request, "loja/produtos.html", {
+        "produtos": page_obj.object_list,
+        "page_obj": page_obj,
+        "termo": termo,
+        "filtro_form": filtro_form,
+        "categoria_selecionada": categoria_selecionada,
+        "ordenacao": ordenacao,
+    })
 
 
+@staff_required
 def produto_criar(request):
     if request.method == "POST":
         form = ProdutoForm(request.POST)
@@ -50,6 +94,7 @@ def produto_criar(request):
     })
 
 
+@staff_required
 def produto_editar(request, pk):
     produto = get_object_or_404(Produto, pk=pk)
     if request.method == "POST":
@@ -65,6 +110,7 @@ def produto_editar(request, pk):
     })
 
 
+@staff_required
 def produto_excluir(request, pk):
     produto = get_object_or_404(Produto, pk=pk)
     if request.method == "POST":
@@ -77,10 +123,13 @@ def produto_excluir(request, pk):
     })
 
 
+@staff_required
 def categorias(request):
-    return render(request, "loja/categorias.html", {"categorias": Categoria.objects.all()})
+    lista = Categoria.objects.annotate(total_produtos=Count("produtos"))
+    return render(request, "loja/categorias.html", {"categorias": lista})
 
 
+@staff_required
 def categoria_criar(request):
     if request.method == "POST":
         form = CategoriaForm(request.POST)
@@ -95,6 +144,7 @@ def categoria_criar(request):
     })
 
 
+@staff_required
 def categoria_editar(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == "POST":
@@ -110,6 +160,7 @@ def categoria_editar(request, pk):
     })
 
 
+@staff_required
 def categoria_excluir(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == "POST":

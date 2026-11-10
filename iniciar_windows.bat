@@ -24,7 +24,6 @@ if errorlevel 1 (
 )
 echo.
 echo Preparando o banco de dados...
-python manage.py makemigrations loja
 python manage.py migrate
 if errorlevel 1 (
     echo Erro ao preparar o banco de dados.

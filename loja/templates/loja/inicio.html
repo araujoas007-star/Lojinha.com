@@ -1,7 +1,7 @@
 {% extends "loja/base.html" %}
 {% block title %}Visão geral | Lojinha.com{% endblock %}
 {% block content %}
-<div class="page-heading">
+<div class="page-heading dashboard-heading">
     <div><div class="eyebrow">PAINEL DE CONTROLE</div><h1>Visão geral</h1><p>Bem-vindo ao painel da sua loja de conveniência.</p></div>
     <a class="button button-primary" href="{% url 'loja:produto_criar' %}"><span>＋</span> Novo produto</a>
 </div>
@@ -9,7 +9,7 @@
     <article class="stat-card"><div class="stat-top"><span class="stat-label">Produtos cadastrados</span><span class="stat-icon purple">▤</span></div><div class="stat-value">{{ total_produtos }}</div><div class="stat-foot">Itens no catálogo</div></article>
     <article class="stat-card"><div class="stat-top"><span class="stat-label">Categorias</span><span class="stat-icon blue">▧</span></div><div class="stat-value">{{ total_categorias }}</div><div class="stat-foot">Tipos de produtos</div></article>
     <article class="stat-card"><div class="stat-top"><span class="stat-label">Valor em estoque</span><span class="stat-icon green">R$</span></div><div class="stat-value money">R$ {{ valor_total|floatformat:2 }}</div><div class="stat-foot">Preço × quantidade</div></article>
-    <article class="stat-card"><div class="stat-top"><span class="stat-label">Estoque baixo</span><span class="stat-icon orange">!</span></div><div class="stat-value">{{ itens_baixo_estoque|length }}</div><div class="stat-foot">Até 5 unidades nos itens exibidos</div></article>
+    <article class="stat-card"><div class="stat-top"><span class="stat-label">Estoque baixo</span><span class="stat-icon orange">!</span></div><div class="stat-value">{{ total_estoque_baixo }}</div><div class="stat-foot">Produtos com 5 unidades ou menos</div></article>
 </div>
 <div class="content-grid">
     <section class="panel">
