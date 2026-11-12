@@ -32,16 +32,16 @@ Aplicação web acadêmica desenvolvida com Python e Django, conforme os requisi
    .\iniciar_windows.bat
    ```
 
-5. Quando terminar, execute:
-
-   ```powershell
-   .\iniciar_site.bat
-   ```
-
-6. Crie o primeiro usuário autorizado:
+5. Crie o primeiro usuário autorizado:
 
    ```powershell
    .\.venv\Scripts\python.exe manage.py createsuperuser
+   ```
+
+6. Inicie o site:
+
+   ```powershell
+   .\iniciar_site.bat
    ```
 
 7. Abra no navegador: http://127.0.0.1:8000/ e entre com essa conta.
