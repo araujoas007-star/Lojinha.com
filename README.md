@@ -150,7 +150,3 @@ Lojinha.com/
 ## Escopo em andamento
 
 O catálogo, o controle auditável de estoque, o PDV, as vendas, os pagamentos, os cancelamentos, os relatórios e a exportação PDF estão implementados. Os relatórios permitem selecionar até 365 dias, exibem na tela as 30 movimentações mais recentes e incluem todas as movimentações do período no PDF.
-
-## Observações acadêmicas
-
-O Django Admin está disponível apenas como ferramenta auxiliar. O CRUD principal é realizado nas páginas HTML do próprio sistema, conforme solicitado no enunciado. Antes da entrega, a equipe deve executar e testar o projeto no próprio computador, revisar o código e estar preparada para explicar os modelos, o `ForeignKey`, as views, as URLs, os templates e as operações CRUD.
