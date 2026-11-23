@@ -68,12 +68,33 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+DATABASE_ENGINE = os.environ.get("LOJINHA_DB_ENGINE", "sqlite")
+if DATABASE_ENGINE == "sqlite":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
+elif DATABASE_ENGINE == "postgresql":
+    db_name = os.environ.get("LOJINHA_DB_NAME")
+    db_user = os.environ.get("LOJINHA_DB_USER")
+    if not db_name or not db_user:
+        raise ImproperlyConfigured(
+            "Defina LOJINHA_DB_NAME e LOJINHA_DB_USER para usar PostgreSQL."
+        )
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": db_name,
+            "USER": db_user,
+            "PASSWORD": os.environ.get("LOJINHA_DB_PASSWORD", ""),
+            "HOST": os.environ.get("LOJINHA_DB_HOST", "127.0.0.1"),
+            "PORT": os.environ.get("LOJINHA_DB_PORT", "5432"),
+        }
+    }
+else:
+    raise ImproperlyConfigured("LOJINHA_DB_ENGINE deve ser 'sqlite' ou 'postgresql'.")
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -92,6 +113,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CSRF_TRUSTED_ORIGINS = [

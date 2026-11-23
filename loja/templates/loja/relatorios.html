@@ -1,0 +1,204 @@
+{% extends "loja/base.html" %}
+
+{% block title %}Relatórios | Lojinha.com{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <div class="eyebrow">ANÁLISE DA LOJA</div>
+        <h1>Relatórios</h1>
+        <p>Vendas, faturamento e estoque em um período selecionado.</p>
+    </div>
+    <div class="heading-actions">
+        {% if pdf_url %}
+            <a class="button button-primary" href="{{ pdf_url }}">⇩ Exportar PDF</a>
+        {% endif %}
+        <a class="button button-light" href="{% url 'loja:vendas' %}">Histórico de vendas</a>
+    </div>
+</div>
+
+<section class="panel report-filter-panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Escolha o período</h2>
+            <p>Período máximo de 365 dias. A comparação usa o intervalo anterior de mesma duração.</p>
+        </div>
+        <form method="get" class="filters-form report-filter-form">
+            <div class="filter-field">
+                {{ filtro.data_inicio.label_tag }}
+                {{ filtro.data_inicio }}
+                {% if filtro.data_inicio.errors %}<div class="field-error">{{ filtro.data_inicio.errors }}</div>{% endif %}
+            </div>
+            <div class="filter-field">
+                {{ filtro.data_fim.label_tag }}
+                {{ filtro.data_fim }}
+                {% if filtro.data_fim.errors %}<div class="field-error">{{ filtro.data_fim.errors }}</div>{% endif %}
+            </div>
+            <div class="filter-field">
+                {{ filtro.agrupamento.label_tag }}
+                {{ filtro.agrupamento }}
+                {% if filtro.agrupamento.errors %}<div class="field-error">{{ filtro.agrupamento.errors }}</div>{% endif %}
+            </div>
+            <button class="button button-primary" type="submit">Aplicar</button>
+            {% if filtro.non_field_errors %}<div class="filter-errors">{{ filtro.non_field_errors }}</div>{% endif %}
+        </form>
+    </div>
+</section>
+
+{% if relatorio %}
+    <div class="report-period-note">
+        Exibindo {{ relatorio.data_inicio|date:"d/m/Y" }} a {{ relatorio.data_fim|date:"d/m/Y" }}.
+        O faturamento considera somente vendas finalizadas.
+    </div>
+
+    <section class="stats-grid report-stats">
+        <article class="stat-card">
+            <div class="stat-top"><span class="stat-label">Vendas finalizadas</span><span class="stat-icon blue">▤</span></div>
+            <div class="stat-value">{{ relatorio.metricas.quantidade }}</div>
+            <div class="stat-foot">No período selecionado</div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-top"><span class="stat-label">Faturamento</span><span class="stat-icon green">R$</span></div>
+            <div class="stat-value money">R$ {{ relatorio.metricas.faturamento|floatformat:2 }}</div>
+            <div class="stat-foot">Vendas canceladas não incluídas</div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-top"><span class="stat-label">Descontos</span><span class="stat-icon orange">%</span></div>
+            <div class="stat-value money">R$ {{ relatorio.metricas.descontos|floatformat:2 }}</div>
+            <div class="stat-foot">Aplicados nas vendas finalizadas</div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-top"><span class="stat-label">Vendas canceladas</span><span class="stat-icon purple">↶</span></div>
+            <div class="stat-value">{{ relatorio.vendas_canceladas }}</div>
+            <div class="stat-foot">Mantidas no histórico, fora do faturamento</div>
+        </article>
+    </section>
+
+    <div class="content-grid report-content-grid">
+        <section class="panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Faturamento {% if relatorio.agrupamento == "dia" %}diário{% elif relatorio.agrupamento == "semana" %}semanal{% else %}mensal{% endif %}</h2>
+                    <p>Comparado ao período anterior: {{ relatorio.comparacao.inicio_anterior|date:"d/m/Y" }} a {{ relatorio.comparacao.fim_anterior|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+            <div class="report-comparison">
+                <div>
+                    <span>Faturamento do período anterior</span>
+                    <strong>R$ {{ relatorio.comparacao.faturamento_anterior|floatformat:2 }}</strong>
+                </div>
+                <div>
+                    <span>Vendas no período anterior</span>
+                    <strong>{{ relatorio.comparacao.vendas_anterior }}</strong>
+                </div>
+                <div>
+                    <span>Variação do faturamento</span>
+                    <strong class="{% if relatorio.comparacao.faturamento_caiu %}report-negative{% else %}report-positive{% endif %}">
+                        {% if relatorio.comparacao.sem_base_faturamento %}
+                            Novo faturamento
+                        {% elif relatorio.comparacao.tem_variacao_faturamento %}
+                            {% if relatorio.comparacao.faturamento_subiu %}+{% endif %}{{ relatorio.comparacao.variacao_faturamento }}%
+                        {% else %}
+                            —
+                        {% endif %}
+                    </strong>
+                </div>
+            </div>
+            <div class="report-chart">
+                {% for ponto in relatorio.serie %}
+                    <div class="report-chart-row">
+                        <span class="report-chart-label">{{ ponto.rotulo }}</span>
+                        <div class="report-track" role="img" aria-label="R$ {{ ponto.faturamento|floatformat:2 }}">
+                            <span style="width: {{ ponto.percentual_barra }}%"></span>
+                        </div>
+                        <strong>R$ {{ ponto.faturamento|floatformat:2 }}</strong>
+                    </div>
+                {% empty %}
+                    <div class="empty-small">Não há vendas neste período.</div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Estoque baixo</h2>
+                    <p>Produtos ativos no limite mínimo ou abaixo dele.</p>
+                </div>
+                <a class="text-link" href="{% url 'loja:estoque' %}">Abrir estoque →</a>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Produto</th><th>Saldo</th><th>Mínimo</th></tr></thead>
+                    <tbody>
+                        {% for produto in relatorio.estoque_baixo %}
+                            <tr>
+                                <td><strong>{{ produto.nome }}</strong></td>
+                                <td><span class="stock low">{{ produto.quantidade }}</span></td>
+                                <td>{{ produto.estoque_minimo }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="3" class="empty-small">Nenhum produto com estoque baixo.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div class="content-grid report-content-grid report-product-grid">
+        <section class="panel">
+            <div class="panel-heading"><div><h2>Mais vendidos</h2><p>Unidades vendidas no período.</p></div></div>
+            <div class="report-rank-list">
+                {% for produto in relatorio.mais_vendidos %}
+                    <div class="report-rank-item">
+                        <div class="report-rank-name"><strong>{{ produto.nome }}</strong><small>{{ produto.quantidade_vendida }} unidade(s)</small></div>
+                        <div class="report-track"><span style="width: {{ produto.percentual_barra }}%"></span></div>
+                    </div>
+                {% empty %}
+                    <div class="empty-small">Nenhum produto vendido neste período.</div>
+                {% endfor %}
+            </div>
+        </section>
+        <section class="panel">
+            <div class="panel-heading"><div><h2>Menos vendidos</h2><p>Inclui produtos ativos sem vendas no período.</p></div></div>
+            <div class="report-rank-list">
+                {% for produto in relatorio.menos_vendidos %}
+                    <div class="report-rank-item">
+                        <div class="report-rank-name"><strong>{{ produto.nome }}</strong><small>{{ produto.quantidade_vendida }} unidade(s)</small></div>
+                        <div class="report-track"><span class="report-track-muted" style="width: {{ produto.percentual_barra }}%"></span></div>
+                    </div>
+                {% empty %}
+                    <div class="empty-small">Nenhum produto ativo cadastrado.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <section class="panel report-movements-panel">
+        <div class="panel-heading">
+            <div><h2>Movimentações de estoque</h2><p>Até 30 registros mais recentes no período. O PDF contém todas as movimentações.</p></div>
+            <a class="text-link" href="{% url 'loja:estoque' %}">Ver estoque →</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Data</th><th>Produto</th><th>Tipo</th><th>Variação</th><th>Responsável</th><th>Motivo</th></tr></thead>
+                <tbody>
+                    {% for movimento in movimentacoes_recentes %}
+                        <tr>
+                            <td>{{ movimento.data_movimentacao|date:"d/m/Y H:i" }}</td>
+                            <td><strong>{{ movimento.produto.nome }}</strong></td>
+                            <td>{{ movimento.get_tipo_display }}</td>
+                            <td>{% if movimento.variacao_quantidade > 0 %}+{% endif %}{{ movimento.variacao_quantidade }}</td>
+                            <td>{{ movimento.responsavel_nome }}</td>
+                            <td>{{ movimento.motivo|default:"—" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="6" class="empty-small">Nenhuma movimentação neste período.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "loja/base.html" %}
+{% block title %}Revisar venda | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div><div class="eyebrow">PONTO DE VENDA</div><h1>Revisar venda</h1><p>Os preços foram consultados novamente no catálogo antes da confirmação.</p></div>
+    <a class="button button-light" href="{% url 'loja:pdv' %}">Voltar ao carrinho</a>
+</div>
+<div class="checkout-layout">
+    <section class="panel">
+        <div class="panel-heading"><div><h2>Itens da venda</h2><p>Confira produtos, quantidades e preços atuais.</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Quantidade</th><th>Preço unitário</th><th>Subtotal</th></tr></thead><tbody>
+        {% for item in previa.itens %}
+        <tr><td><strong>{{ item.produto.nome }}</strong></td><td>{{ item.quantidade }}</td><td>R$ {{ item.preco_unitario|floatformat:2 }}</td><td>R$ {{ item.subtotal|floatformat:2 }}</td></tr>
+        {% endfor %}
+        </tbody></table></div>
+    </section>
+    <section class="panel checkout-panel">
+        <div class="panel-heading"><div><h2>{% if revisao %}Confirmação{% else %}Pagamento e desconto{% endif %}</h2><p>{% if revisao %}Confira o total antes de finalizar.{% else %}Informe os dados para calcular a confirmação.{% endif %}</p></div></div>
+        <form class="checkout-form" method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+            {% if revisao %}
+                <div class="checkout-summary">
+                    <div><span>Subtotal</span><strong>R$ {{ previa.subtotal|floatformat:2 }}</strong></div>
+                    {% if desconto %}<div><span>Desconto</span><strong>− R$ {{ desconto|floatformat:2 }}</strong></div>{% endif %}
+                    <div class="checkout-grand-total"><span>Total a pagar</span><strong>R$ {{ total|floatformat:2 }}</strong></div>
+                </div>
+                <div class="payment-review"><span>Forma de pagamento</span><strong>{{ forma_pagamento_display }}</strong></div>
+                {% if valor_recebido %}<div class="payment-review"><span>Valor recebido</span><strong>R$ {{ valor_recebido|floatformat:2 }}</strong></div><div class="payment-review"><span>Troco</span><strong>R$ {{ troco|floatformat:2 }}</strong></div>{% endif %}
+                <input type="hidden" name="token_previa" value="{{ token_previa }}">
+                <input type="hidden" name="forma_pagamento" value="{{ form.cleaned_data.forma_pagamento }}">
+                <input type="hidden" name="valor_recebido" value="{{ form.cleaned_data.valor_recebido|default_if_none:'' }}">
+                {% if "desconto" in form.fields %}<input type="hidden" name="desconto" value="{{ form.cleaned_data.desconto|default_if_none:'' }}">{% endif %}
+                <button class="button button-primary checkout-button" type="submit" name="acao" value="finalizar">Confirmar e finalizar venda</button>
+                <a class="text-link checkout-edit-link" href="{% url 'loja:venda_checkout' %}">Voltar e alterar os dados</a>
+            {% else %}
+                {% if "desconto" in form.fields %}
+                <div class="form-field"><label for="{{ form.desconto.id_for_label }}">{{ form.desconto.label }}</label>{{ form.desconto }}{% if form.desconto.help_text %}<small class="help-text">{{ form.desconto.help_text }}</small>{% endif %}{% if form.desconto.errors %}<div class="field-error">{{ form.desconto.errors }}</div>{% endif %}</div>
+                {% endif %}
+                <div class="form-field"><label for="{{ form.forma_pagamento.id_for_label }}">{{ form.forma_pagamento.label }}</label>{{ form.forma_pagamento }}{% if form.forma_pagamento.errors %}<div class="field-error">{{ form.forma_pagamento.errors }}</div>{% endif %}</div>
+                <div class="form-field" id="cash-fields"><label for="{{ form.valor_recebido.id_for_label }}">{{ form.valor_recebido.label }}</label>{{ form.valor_recebido }}{% if form.valor_recebido.errors %}<div class="field-error">{{ form.valor_recebido.errors }}</div>{% endif %}</div>
+                <div class="checkout-summary">
+                    <div><span>Subtotal atual</span><strong>R$ {{ previa.subtotal|floatformat:2 }}</strong></div>
+                    {% if desconto %}<div><span>Desconto informado</span><strong>− R$ {{ desconto|floatformat:2 }}</strong></div>{% endif %}
+                    <div class="checkout-grand-total"><span>Total calculado</span><strong>R$ {{ total|floatformat:2 }}</strong></div>
+                </div>
+                <button class="button button-primary checkout-button" type="submit" name="acao" value="revisar">Revisar valores</button>
+            {% endif %}
+        </form>
+    </section>
+</div>
+{% if not revisao %}
+<script>
+    const formaPagamento = document.getElementById("id_forma_pagamento");
+    const camposDinheiro = document.getElementById("cash-fields");
+    function atualizarCamposPagamento() {
+        camposDinheiro.hidden = formaPagamento.value !== "dinheiro";
+    }
+    formaPagamento.addEventListener("change", atualizarCamposPagamento);
+    atualizarCamposPagamento();
+</script>
+{% endif %}
+{% endblock %}

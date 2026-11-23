@@ -1,0 +1,49 @@
+{% extends "loja/base.html" %}
+{% block title %}Estoque | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div><div class="eyebrow">CONTROLE DE ESTOQUE</div><h1>Estoque</h1><p>Registre cada alteração e consulte o histórico de movimentações.</p></div>
+</div>
+<div class="stats-grid stock-stats">
+    <article class="stat-card"><div class="stat-top"><span class="stat-label">Produtos ativos</span><span class="stat-icon purple">▤</span></div><div class="stat-value">{{ total_produtos }}</div><div class="stat-foot">Itens no catálogo</div></article>
+    <article class="stat-card"><div class="stat-top"><span class="stat-label">Estoque baixo</span><span class="stat-icon orange">!</span></div><div class="stat-value">{{ total_estoque_baixo }}</div><div class="stat-foot">No limite mínimo individual</div></article>
+    <article class="stat-card"><div class="stat-top"><span class="stat-label">Sem estoque</span><span class="stat-icon blue">0</span></div><div class="stat-value">{{ total_sem_estoque }}</div><div class="stat-foot">Produtos ativos com saldo zero</div></article>
+</div>
+<div class="stock-layout">
+    <section class="panel stock-form-panel">
+        <div class="panel-heading"><div><h2>Nova movimentação</h2><p>Informe o produto, a operação, a quantidade e o motivo.</p></div></div>
+        <form class="stock-form" method="post" action="{% url 'loja:estoque_movimentar' %}" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+            {% for field in form %}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required">*</span>{% endif %}</label>
+                {{ field }}
+                {% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
+                {% if field.errors %}<div class="field-error">{{ field.errors }}</div>{% endif %}
+            </div>
+            {% endfor %}
+            <div class="form-actions"><button class="button button-primary" type="submit">Registrar movimentação</button></div>
+        </form>
+    </section>
+    <section class="panel">
+        <div class="panel-heading"><div><h2>Histórico recente</h2><p>Últimas 30 movimentações registradas</p></div></div>
+        {% if movimentacoes %}
+        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Produto</th><th>Tipo</th><th>Variação</th><th>Saldo</th><th>Responsável / motivo</th></tr></thead><tbody>
+        {% for movimento in movimentacoes %}
+        <tr>
+            <td>{{ movimento.data_movimentacao|date:"d/m/Y H:i" }}</td>
+            <td><strong>{{ movimento.produto.nome }}</strong></td>
+            <td>{{ movimento.get_tipo_display }}</td>
+            <td>{% if movimento.variacao_quantidade > 0 %}<span class="stock ok">+{{ movimento.variacao_quantidade }}{% else %}<span class="stock low">{{ movimento.variacao_quantidade }}{% endif %}</span></td>
+            <td>{{ movimento.quantidade_anterior }} → {{ movimento.quantidade_posterior }}</td>
+            <td><strong>{{ movimento.responsavel_nome }}</strong>{% if movimento.motivo %}<small class="movement-reason">{{ movimento.motivo|truncatechars:70 }}</small>{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody></table></div>
+        {% else %}
+        <div class="empty-state"><span class="empty-icon">▣</span><h3>Nenhuma movimentação registrada</h3><p>As alterações de estoque aparecerão aqui.</p></div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

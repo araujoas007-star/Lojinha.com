@@ -1,0 +1,16 @@
+{% extends "loja/base.html" %}
+{% block title %}Comprovante da venda #{{ venda.pk }} | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading print-actions"><div><div class="eyebrow">COMPROVANTE SIMPLIFICADO</div><h1>Venda #{{ venda.pk }}</h1><p>{{ venda.data_venda|date:"d/m/Y H:i" }} · {{ venda.usuario_nome }}</p></div><div class="heading-actions"><button class="button button-primary" type="button" onclick="window.print()">Imprimir</button><a class="button button-light" href="{% url 'loja:venda_detalhe' venda.pk %}">Voltar</a></div></div>
+<section class="panel receipt-panel">
+    <div class="receipt-brand"><strong>Lojinha.com</strong><span>Comprovante não fiscal</span></div>
+    <div class="receipt-meta"><span>Venda #{{ venda.pk }}</span><span>{{ venda.data_venda|date:"d/m/Y H:i" }}</span><span>Atendente: {{ venda.usuario_nome }}</span></div>
+    {% if venda.status == "cancelada" %}<div class="receipt-cancelled">VENDA CANCELADA · {{ venda.motivo_cancelamento }}</div>{% endif %}
+    <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Qtd.</th><th>Unitário</th><th>Total</th></tr></thead><tbody>
+    {% for item in venda.itens.all %}<tr><td>{{ item.nome_produto }}</td><td>{{ item.quantidade }}</td><td>R$ {{ item.preco_unitario|floatformat:2 }}</td><td>R$ {{ item.subtotal|floatformat:2 }}</td></tr>{% endfor %}
+    </tbody></table></div>
+    <div class="sale-totals"><div><span>Subtotal</span><strong>R$ {{ venda.subtotal|floatformat:2 }}</strong></div><div><span>Desconto</span><strong>R$ {{ venda.desconto|floatformat:2 }}</strong></div><div class="checkout-grand-total"><span>Total</span><strong>R$ {{ venda.total|floatformat:2 }}</strong></div></div>
+    <div class="receipt-payment"><span>Pagamento: {{ venda.pagamento.get_forma_pagamento_display }}</span>{% if venda.pagamento.forma_pagamento == "dinheiro" %}<span>Recebido: R$ {{ venda.pagamento.valor_recebido|floatformat:2 }} · Troco: R$ {{ venda.pagamento.troco|floatformat:2 }}</span>{% endif %}</div>
+    <p class="receipt-footer">Obrigado pela preferência!</p>
+</section>
+{% endblock %}

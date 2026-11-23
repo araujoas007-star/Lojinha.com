@@ -19,6 +19,10 @@
             <nav class="nav-menu">
                 <a class="nav-link {% if request.resolver_match.url_name == 'inicio' %}active{% endif %}" href="{% url 'loja:inicio' %}"><span>▦</span> Visão geral</a>
                 <a class="nav-link {% if 'produto' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'loja:produtos' %}"><span>▤</span> Produtos</a>
+                <a class="nav-link {% if 'estoque' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'loja:estoque' %}"><span>▣</span> Estoque</a>
+                <a class="nav-link {% if 'pdv' in request.resolver_match.url_name or 'carrinho' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'loja:pdv' %}"><span>▣</span> PDV</a>
+                <a class="nav-link {% if 'venda' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'loja:vendas' %}"><span>▤</span> Vendas</a>
+                <a class="nav-link {% if 'relatorio' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'loja:relatorios' %}"><span>▥</span> Relatórios</a>
                 <a class="nav-link {% if 'categoria' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'loja:categorias' %}"><span>▧</span> Categorias</a>
             </nav>
             <div class="sidebar-bottom">

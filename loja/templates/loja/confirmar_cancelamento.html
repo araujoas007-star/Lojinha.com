@@ -1,0 +1,16 @@
+{% extends "loja/base.html" %}
+{% block title %}Cancelar venda #{{ venda.pk }} | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">CANCELAMENTO</div><h1>Cancelar venda #{{ venda.pk }}</h1><p>O estoque será estornado; o reembolso é manual.</p></div></div>
+<section class="panel confirm-panel">
+    <div class="confirm-icon">!</div>
+    <h2>Confirme o cancelamento integral</h2>
+    <p>Esta ação devolverá <strong>{{ venda.itens.count }} item(ns)</strong> ao estoque, manterá a venda no histórico e não poderá ser repetida.</p>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="form-field"><label for="{{ form.motivo.id_for_label }}">{{ form.motivo.label }}<span class="required">*</span></label>{{ form.motivo }}{% if form.motivo.errors %}<div class="field-error">{{ form.motivo.errors }}</div>{% endif %}</div>
+        <div class="form-actions center"><a class="button button-light" href="{% url 'loja:venda_detalhe' venda.pk %}">Voltar</a><button class="button button-danger" type="submit">Confirmar cancelamento</button></div>
+    </form>
+</section>
+{% endblock %}

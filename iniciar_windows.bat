@@ -23,14 +23,7 @@ if errorlevel 1 (
     exit /b 1
 )
 echo.
-echo Preparando o banco de dados...
-python manage.py migrate
-if errorlevel 1 (
-    echo Erro ao preparar o banco de dados.
-    pause
-    exit /b 1
-)
-echo.
 echo Configuracao concluida!
+echo Configure o PostgreSQL e aplique as migracoes conforme o README.
 echo Para iniciar o site, execute iniciar_site.bat
 pause

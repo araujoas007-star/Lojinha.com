@@ -1,0 +1,37 @@
+{% extends "loja/base.html" %}
+{% block title %}Vendas | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">HISTÓRICO COMERCIAL</div><h1>Vendas</h1><p>Consulte vendas finalizadas e canceladas.</p></div><a class="button button-primary" href="{% url 'loja:pdv' %}">＋ Nova venda</a></div>
+<section class="panel">
+    <div class="panel-heading"><div><h2>Histórico de vendas</h2><p>{{ page_obj.paginator.count }} registro(s)</p></div>
+        <form class="filters-form sales-filters" method="get">
+            <div class="filter-field"><label for="{{ filtro.data_inicio.id_for_label }}">De</label>{{ filtro.data_inicio }}</div>
+            <div class="filter-field"><label for="{{ filtro.data_fim.id_for_label }}">Até</label>{{ filtro.data_fim }}</div>
+            <div class="filter-field"><label for="{{ filtro.status.id_for_label }}">Status</label>{{ filtro.status }}</div>
+            <button class="button button-light" type="submit">Filtrar</button>
+            {% if filtro.data_inicio.value or filtro.data_fim.value or filtro.status.value %}<a class="text-link" href="{% url 'loja:vendas' %}">Limpar</a>{% endif %}
+            {% if filtro.errors %}<div class="filter-errors">{{ filtro.errors }}</div>{% endif %}
+        </form>
+    </div>
+    {% if vendas %}
+    <div class="table-wrap"><table><thead><tr><th>Venda</th><th>Data</th><th>Responsável</th><th>Pagamento</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>
+    {% for venda in vendas %}
+    <tr>
+        <td><strong>#{{ venda.pk }}</strong></td>
+        <td>{{ venda.data_venda|date:"d/m/Y H:i" }}</td>
+        <td>{{ venda.usuario_nome }}</td>
+        <td>{{ venda.pagamento.get_forma_pagamento_display }}</td>
+        <td>R$ {{ venda.total|floatformat:2 }}</td>
+        <td>{% if venda.status == "cancelada" %}<span class="stock low">Cancelada</span>{% else %}<span class="stock ok">Finalizada</span>{% endif %}</td>
+        <td><a class="action-edit" href="{% url 'loja:venda_detalhe' venda.pk %}">Detalhes</a></td>
+    </tr>
+    {% endfor %}
+    </tbody></table></div>
+    {% if page_obj.has_other_pages %}<nav class="pagination" aria-label="Paginação de vendas">
+        {% if page_obj.has_previous %}<a href="?{% if filtro.data_inicio.value %}data_inicio={{ filtro.data_inicio.value|urlencode }}&amp;{% endif %}{% if filtro.data_fim.value %}data_fim={{ filtro.data_fim.value|urlencode }}&amp;{% endif %}{% if filtro.status.value %}status={{ filtro.status.value|urlencode }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">‹ Anterior</a>{% else %}<span class="disabled">‹ Anterior</span>{% endif %}
+        <span class="pagination-status">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a href="?{% if filtro.data_inicio.value %}data_inicio={{ filtro.data_inicio.value|urlencode }}&amp;{% endif %}{% if filtro.data_fim.value %}data_fim={{ filtro.data_fim.value|urlencode }}&amp;{% endif %}{% if filtro.status.value %}status={{ filtro.status.value|urlencode }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Próxima ›</a>{% else %}<span class="disabled">Próxima ›</span>{% endif %}
+    </nav>{% endif %}
+    {% else %}<div class="empty-state"><span class="empty-icon">▤</span><h3>Nenhuma venda encontrada</h3><p>Quando uma venda for finalizada, ela aparecerá neste histórico.</p><a class="button button-primary" href="{% url 'loja:pdv' %}">Iniciar uma venda</a></div>{% endif %}
+</section>
+{% endblock %}

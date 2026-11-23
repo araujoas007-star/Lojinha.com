@@ -1,0 +1,27 @@
+{% extends "loja/base.html" %}
+{% block title %}Venda #{{ venda.pk }} | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">DETALHES DA OPERAÇÃO</div><h1>Venda #{{ venda.pk }}</h1><p>{{ venda.data_venda|date:"d/m/Y H:i" }} · {{ venda.usuario_nome }}</p></div><div class="heading-actions"><a class="button button-light" href="{% url 'loja:venda_comprovante' venda.pk %}">Comprovante</a>{% if pode_cancelar %}<a class="button button-danger" href="{% url 'loja:venda_cancelar' venda.pk %}">Cancelar venda</a>{% endif %}</div></div>
+<div class="content-grid sale-detail-grid">
+    <section class="panel">
+        <div class="panel-heading"><div><h2>Itens da venda</h2><p>Preços e nomes preservados no momento da compra</p></div><span class="stock {% if venda.status == 'cancelada' %}low{% else %}ok{% endif %}">{{ venda.get_status_display }}</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Quantidade</th><th>Preço unitário</th><th>Subtotal</th></tr></thead><tbody>
+        {% for item in venda.itens.all %}
+        <tr><td><strong>{{ item.nome_produto }}</strong>{% if item.codigo_barras %}<small class="movement-reason">Código: {{ item.codigo_barras }}</small>{% endif %}</td><td>{{ item.quantidade }}</td><td>R$ {{ item.preco_unitario|floatformat:2 }}</td><td>R$ {{ item.subtotal|floatformat:2 }}</td></tr>
+        {% endfor %}
+        </tbody></table></div>
+        <div class="sale-totals"><div><span>Subtotal</span><strong>R$ {{ venda.subtotal|floatformat:2 }}</strong></div><div><span>Desconto</span><strong>R$ {{ venda.desconto|floatformat:2 }}</strong></div><div class="checkout-grand-total"><span>Total</span><strong>R$ {{ venda.total|floatformat:2 }}</strong></div></div>
+    </section>
+    <section class="panel">
+        <div class="panel-heading"><div><h2>Pagamento</h2><p>Registrado sem integração externa</p></div></div>
+        <div class="sale-info">
+            <div><span>Forma</span><strong>{{ venda.pagamento.get_forma_pagamento_display }}</strong></div>
+            <div><span>Valor pago</span><strong>R$ {{ venda.pagamento.valor_pago|floatformat:2 }}</strong></div>
+            {% if venda.pagamento.forma_pagamento == "dinheiro" %}<div><span>Valor recebido</span><strong>R$ {{ venda.pagamento.valor_recebido|floatformat:2 }}</strong></div><div><span>Troco</span><strong>R$ {{ venda.pagamento.troco|floatformat:2 }}</strong></div>{% endif %}
+            {% if venda.gerente_autorizador_nome %}<div><span>Desconto autorizado por</span><strong>{{ venda.gerente_autorizador_nome }}</strong></div>{% endif %}
+            {% if venda.status == "cancelada" %}<div class="cancelled-info"><span>Cancelamento</span><strong>{{ venda.data_cancelamento|date:"d/m/Y H:i" }} · {{ venda.usuario_cancelamento_nome }}</strong><small>{{ venda.motivo_cancelamento }}</small></div><p class="help-text">O reembolso deve ser realizado manualmente fora do sistema.</p>{% endif %}
+        </div>
+        <div class="panel-bottom-actions"><a class="text-link" href="{% url 'loja:vendas' %}">← Voltar ao histórico</a><a class="text-link" href="{% url 'loja:venda_comprovante' venda.pk %}">Imprimir comprovante →</a></div>
+    </section>
+</div>
+{% endblock %}

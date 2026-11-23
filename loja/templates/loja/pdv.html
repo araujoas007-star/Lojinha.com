@@ -1,0 +1,85 @@
+{% extends "loja/base.html" %}
+{% block title %}PDV | Lojinha.com{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div><div class="eyebrow">PONTO DE VENDA</div><h1>Nova venda</h1><p>Pesquise pelo nome ou código de barras e monte o carrinho.</p></div>
+</div>
+<div class="pdv-layout">
+    <section class="panel">
+        <div class="panel-heading pdv-search-heading">
+            <div><h2>Produtos disponíveis</h2><p>Até 30 resultados por busca</p></div>
+            <form class="search-form pdv-search" method="get">
+                {{ formulario_busca.q }}
+                <button class="button button-light" type="submit">Buscar</button>
+                {% if termo %}<a class="text-link" href="{% url 'loja:pdv' %}">Limpar</a>{% endif %}
+            </form>
+        </div>
+        {% if produtos %}
+        <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Preço</th><th>Disponível</th><th>Adicionar</th></tr></thead><tbody>
+        {% for produto in produtos %}
+        <tr>
+            <td><div class="product-cell"><span class="product-thumb">{{ produto.nome|slice:":1"|upper }}</span><div><strong>{{ produto.nome }}</strong>{% if produto.codigo_barras %}<small>{{ produto.codigo_barras }}</small>{% endif %}</div></div></td>
+            <td>R$ {{ produto.preco|floatformat:2 }}</td>
+            <td>{% if produto.quantidade > 0 %}<span class="stock ok">{{ produto.quantidade }} un.</span>{% else %}<span class="stock low">Sem estoque</span>{% endif %}</td>
+            <td>
+                {% if produto.quantidade > 0 %}
+                <form class="quick-add-form" method="post" action="{% url 'loja:carrinho_adicionar' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="produto_id" value="{{ produto.pk }}">
+                    <input type="number" name="quantidade" value="1" min="1" max="{{ produto.quantidade }}" aria-label="Quantidade de {{ produto.nome }}">
+                    <button class="button button-primary" type="submit">Adicionar</button>
+                </form>
+                {% else %}<span class="muted-text">Indisponível</span>{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody></table></div>
+        {% else %}
+        <div class="empty-state"><span class="empty-icon">⌕</span><h3>{% if termo %}Nenhum produto encontrado{% else %}Nenhum produto disponível{% endif %}</h3><p>{% if termo %}Confira o nome ou o código de barras digitado.{% else %}Cadastre produtos ativos e registre entradas de estoque para vender.{% endif %}</p></div>
+        {% endif %}
+    </section>
+    <section class="panel cart-panel">
+        <div class="panel-heading"><div><h2>Carrinho</h2><p>{{ linhas_carrinho|length }} produto(s)</p></div>
+            {% if linhas_carrinho %}<form method="post" action="{% url 'loja:carrinho_limpar' %}">{% csrf_token %}<button class="text-link button-link" type="submit">Limpar</button></form>{% endif %}
+        </div>
+        {% if linhas_carrinho %}
+        <div class="cart-items">
+            {% for linha in linhas_carrinho %}
+            <article class="cart-item">
+                <div class="cart-item-heading">
+                    <div><strong>{{ linha.nome }}</strong><small>{% if linha.produto %}R$ {{ linha.preco_unitario|floatformat:2 }} por unidade{% else %}Indisponível{% endif %}</small></div>
+                    {% if linha.disponivel %}<span class="stock ok">Disponível</span>{% else %}<span class="stock low">Revisar estoque</span>{% endif %}
+                </div>
+                <div class="cart-item-actions">
+                    <form class="quantity-form" method="post" action="{% url 'loja:carrinho_atualizar' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="produto_id" value="{{ linha.produto_id }}">
+                        <label class="sr-only" for="quantidade-{{ linha.produto_id }}">Quantidade</label>
+                        <input id="quantidade-{{ linha.produto_id }}" type="number" name="quantidade" min="0" value="{{ linha.quantidade }}" aria-label="Quantidade de {{ linha.nome }}">
+                        <button class="action-edit action-button" type="submit">Atualizar</button>
+                    </form>
+                    <form method="post" action="{% url 'loja:carrinho_remover' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="produto_id" value="{{ linha.produto_id }}">
+                        <button class="action-delete action-button" type="submit">Remover</button>
+                    </form>
+                </div>
+                <div class="cart-item-subtotal">Subtotal <strong>R$ {{ linha.subtotal|floatformat:2 }}</strong></div>
+            </article>
+            {% endfor %}
+        </div>
+        <div class="cart-total"><span>Subtotal</span><strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong></div>
+        <div class="cart-checkout">
+            {% if carrinho_valido %}
+            <a class="button button-primary checkout-button" href="{% url 'loja:venda_checkout' %}">Revisar venda</a>
+            {% else %}
+            <p class="field-error">Ajuste os itens indisponíveis antes de continuar.</p>
+            <button class="button button-primary checkout-button" type="button" disabled>Revisar venda</button>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="empty-state cart-empty"><span class="empty-icon">▱</span><h3>Seu carrinho está vazio</h3><p>Adicione produtos para iniciar uma venda.</p></div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

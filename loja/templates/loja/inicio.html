@@ -9,7 +9,7 @@
     <article class="stat-card"><div class="stat-top"><span class="stat-label">Produtos cadastrados</span><span class="stat-icon purple">▤</span></div><div class="stat-value">{{ total_produtos }}</div><div class="stat-foot">Itens no catálogo</div></article>
     <article class="stat-card"><div class="stat-top"><span class="stat-label">Categorias</span><span class="stat-icon blue">▧</span></div><div class="stat-value">{{ total_categorias }}</div><div class="stat-foot">Tipos de produtos</div></article>
     <article class="stat-card"><div class="stat-top"><span class="stat-label">Valor em estoque</span><span class="stat-icon green">R$</span></div><div class="stat-value money">R$ {{ valor_total|floatformat:2 }}</div><div class="stat-foot">Preço × quantidade</div></article>
-    <article class="stat-card"><div class="stat-top"><span class="stat-label">Estoque baixo</span><span class="stat-icon orange">!</span></div><div class="stat-value">{{ total_estoque_baixo }}</div><div class="stat-foot">Produtos com 5 unidades ou menos</div></article>
+    <article class="stat-card"><div class="stat-top"><span class="stat-label">Estoque baixo</span><span class="stat-icon orange">!</span></div><div class="stat-value">{{ total_estoque_baixo }}</div><div class="stat-foot">Produtos no limite mínimo individual</div></article>
 </div>
 <div class="content-grid">
     <section class="panel">
@@ -23,11 +23,11 @@
         {% else %}<div class="empty-state"><span class="empty-icon">▤</span><h3>Nenhum produto por aqui</h3><p>Cadastre seu primeiro produto para começar.</p><a class="button button-primary" href="{% url 'loja:produto_criar' %}">Cadastrar produto</a></div>{% endif %}
     </section>
     <section class="panel">
-        <div class="panel-heading"><div><h2>Atenção ao estoque</h2><p>Produtos com 5 unidades ou menos</p></div><span class="stat-icon orange">!</span></div>
+        <div class="panel-heading"><div><h2>Atenção ao estoque</h2><p>Produtos no limite mínimo individual</p></div><span class="stat-icon orange">!</span></div>
         {% if itens_baixo_estoque %}
         <div class="low-stock-list">{% for produto in itens_baixo_estoque %}<div class="low-stock-item"><span class="product-dot">•</span><div class="low-stock-info"><strong>{{ produto.nome }}</strong><small>{{ produto.categoria.nome }}</small></div><span class="stock low">{{ produto.quantidade }} un.</span><a class="icon-link" href="{% url 'loja:produto_editar' produto.pk %}" title="Editar produto">↗</a></div>{% endfor %}</div>
         {% else %}<div class="empty-small"><span>✓</span><p>Nenhum produto com estoque baixo.</p></div>{% endif %}
-        <a class="panel-bottom-link" href="{% url 'loja:produtos' %}">Gerenciar estoque →</a>
+        <a class="panel-bottom-link" href="{% url 'loja:estoque' %}">Gerenciar estoque →</a>
     </section>
 </div>
 {% endblock %}

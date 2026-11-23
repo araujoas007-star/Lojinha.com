@@ -1,6 +1,7 @@
 from django import forms
 
 from .models import Categoria
+from .permissions import is_manager
 
 
 class ProdutoFiltroForm(forms.Form):
@@ -29,3 +30,22 @@ class ProdutoFiltroForm(forms.Form):
         required=False,
         label="Ordenação",
     )
+    situacao = forms.ChoiceField(
+        choices=(
+            ("ativos", "Produtos ativos"),
+            ("arquivados", "Produtos arquivados"),
+            ("todos", "Todos os produtos"),
+        ),
+        required=False,
+        label="Situação",
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if is_manager(user):
+            if self.is_bound and not self.data.get("situacao"):
+                self.data = self.data.copy()
+                self.data["situacao"] = "ativos"
+            self.initial.setdefault("situacao", "ativos")
+        else:
+            self.fields.pop("situacao")

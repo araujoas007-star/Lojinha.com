@@ -2,6 +2,8 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.sqlite3
+backups/
+staticfiles/
 .venv/
 venv/
 env/
